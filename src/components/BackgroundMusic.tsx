@@ -4,7 +4,10 @@ import { Play, Pause, Music, Volume2, VolumeX } from 'lucide-react';
 export const BackgroundMusic: React.FC = () => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
-  const [isMuted, setIsMuted] = useState<boolean>(false);
+  const [isMuted, setIsMuted] = useState<boolean>(() => {
+    const saved = localStorage.getItem('bgMusicMuted');
+    return saved === 'true';
+  });
   const [userInteracted, setUserInteracted] = useState<boolean>(false);
 
   useEffect(() => {
@@ -57,8 +60,15 @@ export const BackgroundMusic: React.FC = () => {
     const audio = audioRef.current;
     if (!audio) return;
 
-    audio.muted = !audio.muted;
-    setIsMuted(audio.muted);
+    const newMuted = !audio.muted;
+    audio.muted = newMuted;
+    setIsMuted(newMuted);
+    // Persist mute state across reloads
+    try {
+      localStorage.setItem('bgMusicMuted', newMuted.toString());
+    } catch (e) {
+      console.warn('Failed to persist mute state', e);
+    }
   };
 
   return (
